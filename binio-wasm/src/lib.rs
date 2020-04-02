@@ -1,6 +1,6 @@
 //! # wasi_binio_host and wasi_binio_wasm
 //!
-//! `wasi_binio_wasm` is the host crate of wasm_binio. Another crate is `wasi_binio_host` which used in host.
+//! `wasi_binio_wasm` is the webassembly crate of wasm_binio. Another crate is `wasi_binio_host` which used in host.
 //! wasi_binio_host creates a call_stub so that host can call a webassembly function with complex data structure arguments and results.
 //! wasi_binio_wasm prepare the linear memory buffer and exports required wasm function so that the host can call.
 //! 
