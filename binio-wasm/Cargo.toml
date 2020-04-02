@@ -1,5 +1,5 @@
 [package]
-name = "binio-wasm"
+name = "wasi-binio-wasm"
 version = "0.1.0"
 authors = ["kevingzhang <kevin.zhang.canada@gmail.com>"]
 edition = "2018"

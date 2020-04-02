@@ -3,7 +3,7 @@
 use hello_shared::{Point, Rect};
 
 // binio_wasm is used inside wasm mobile instead of host app.
-use binio_wasm;
+use wasi_binio_wasm;
 
 // We have to have prepare_buffer function here under [no_mangle] because the binio-host will 
 // look for this function from the wasm exports.
@@ -11,7 +11,7 @@ use binio_wasm;
 // the return i64 actually contains two i32. One for buffer pointer another for buffer length
 #[no_mangle]
 fn prepare_buffer(buffer_size: i32)->i64 {
-    binio_wasm::wasm_prepare_buffer(buffer_size)
+    wasi_binio_wasm::wasm_prepare_buffer(buffer_size)
 }
 
 // do_compute is the main function to do the Point to Rect computation
@@ -20,7 +20,7 @@ fn prepare_buffer(buffer_size: i32)->i64 {
 fn do_compute(ptr:i32, buffer_size: i32)->i64{
     //although we can only use i32 , i32 as function args, we can still call
     //binio_wasm::wasm_deserialize to get the Point struct from runtime. 
-    let point_tuple : (Point, Point) = binio_wasm::wasm_deserialize(ptr, buffer_size).unwrap();
+    let point_tuple : (Point, Point) = wasi_binio_wasm::wasm_deserialize(ptr, buffer_size).unwrap();
     
     //print out points make sure we have got the correct args
     println!("Log from wasm -- point1 is {:?}", point_tuple.0);
@@ -48,6 +48,6 @@ fn do_compute(ptr:i32, buffer_size: i32)->i64{
     //Now we have the rect as function's result. we cannot just return a Rect struct
     //becuase wasm support i32 i64 f32 f64 only
     // so we need to use binio to transfer the rect into memory buffer, then send back the address/lenght
-    binio_wasm::wasm_serialize(&rect).unwrap()
+    wasi_binio_wasm::wasm_serialize(&rect).unwrap()
 }
 

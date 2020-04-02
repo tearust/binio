@@ -9,4 +9,4 @@ hello-shared = {path = "../hello-shared"}
 wasmtime="0.15.0"
 wasmtime-wasi="0.15.0"
 wasi-common="0.15.0"
-binio-host = { path ="../../binio-host"}
+wasi-binio-host = { path ="../../binio-host"}

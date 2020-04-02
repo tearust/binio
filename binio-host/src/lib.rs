@@ -1,10 +1,42 @@
+//! # wasi_binio_host and wasi_binio_wasm
+//!
+//! `wasi_binio_host` is the host crate of wasm_binio. Another crate is `wasi_binio_wasm` which used in wasm module.
+//! It creates a call_stub so that host can call a webassembly function with complex data structure arguments and results.
+//!
+//! As of today, wasm function can only take i32 i64 f32 f64 types. If you have a function in wasm like this
+//! In wasm: ` do_compute(point1: &Point, point2: &Point)->Rect {...}`
+//! there is no way to call it directly from host.
+//! With the help from wasm_binio, we can instead call the call_stub function and send arguments and results like this
+//! 
+//! Code in host: 
+//! ```
+//! let result: Rect = call_stub(&instance, &(point1, point2), "do_compute")
+//! ```
+//! 
+//! Code in wasm: 
+//!  ```
+//! #[no_mangle]
+//! fn do_compute(ptr:i32, buffer_size: i32)->i64{
+//!     let point_tuple : (Point, Point) = wasi_binio_wasm::wasm_deserialize(ptr, buffer_size).unwrap();
+//!     let rect: Rect = some_how_make_a_rect_from_two_points()... /* Your own logic here */
+//!     wasi_binio_wasm::wasm_serialize(&rect).unwrap()
+//! }
+//! Since wasm and wasi are under active development. Wasi will soon provide complex arguments support.
+//! At the time you find this crate, this feature probably have already been supported natively.
+//! 
+    
+
 use wasmtime::Instance;
 use serde::{Serialize, Deserialize};
 
-use shared_mods;
+use shared_mods;//We put shared utilities function into shared_mods. basicly i32 i64 convertor
 
-fn reserve_wasm_memory_buffer<'a, T> (obj: &T, instance: &Instance ) -> Result<(i32, i32), &'a str> where T: Serialize {
-    let buffer_size = bincode::serialized_size(obj).expect("Error when calculate the buffer size using bincode") as i32; 
+//Host use this function to call wasm's reserve memory function to reserve a buffer inside
+//wasm's linear memory
+// value is the args will be transferred to wasm
+// result is (buffer_pointer, buffer_length)
+fn reserve_wasm_memory_buffer<'a, T> (value: &T, instance: &Instance ) -> Result<(i32, i32), &'a str> where T: Serialize {
+    let buffer_size = bincode::serialized_size(value).expect("Error when calculate the buffer size using bincode") as i32; 
     let prepare_buffer_func = instance
         .get_export("prepare_buffer")
         .and_then(|e| e.func())
@@ -15,10 +47,10 @@ fn reserve_wasm_memory_buffer<'a, T> (obj: &T, instance: &Instance ) -> Result<(
     Ok(shared_mods::split_i64_to_i32(result))
 }
 
-fn fill_buffer<T> (obj: &T, instance: &Instance, ptr:i32, len:i32) -> Result<(), &'static str> where T: Serialize {
+fn fill_buffer<T> (value: &T, instance: &Instance, ptr:i32, len:i32) -> Result<(), &'static str> where T: Serialize {
     let mem = instance.get_export("memory").expect("Cannot get export memory from instance").memory().expect("cannot get memory");
     let mem_array: &mut [u8];
-    let serialized_array = bincode::serialize(obj).expect("Error inside bincode::serialize");
+    let serialized_array = bincode::serialize(value).expect("Error inside bincode::serialize");
     unsafe{
         mem_array = mem.data_unchecked_mut();
         for i in 0..len {
@@ -28,6 +60,35 @@ fn fill_buffer<T> (obj: &T, instance: &Instance, ptr:i32, len:i32) -> Result<(),
     Ok(())
 }
 
+/// From host, call a wasm function with complex arguments and results.
+/// 
+// --snip--
+/// 
+///
+/// # Examples
+///
+/// ```
+/// let instance = Instance::new(&module, &imports).unwrap();
+///
+///    //We create two Point values here
+///    let point1 = Point{x:2, y:3};
+///    let point2 = Point{x:8, y:9};
+///    
+///    println!("Host app created two Point values which will be sent to the wasm module: {:?} {:?}", point1, point2);
+///
+///    //we use binio function call_stub to indirectly call the 'do_compute' function in 
+///    //our wasm module.
+///    //Because wasm function cannot take (point1, point2) as input args so 
+///    //we have to indirectly using call_stub
+///    //call_stub takes the do_compute's args as its args, then returns whatever
+///    //do_compute will return
+///    let result: Rect/* It is very important to have the Type here */
+///        = call_stub(&instance, //Instance is needed to find export wasm function
+///            &(point1, point2),//This was originally 'do_compute' args, now used by call_stub, it will then be transferred to wasm
+///            "do_compute"//this is the name of the user function in wasm.
+///        );
+///           
+/// ```
 pub fn call_stub <'a, T, R> (instance: &'a Instance, arg: &T, func_name: &str) -> R 
 where T: Serialize, R: Deserialize<'a> {
     

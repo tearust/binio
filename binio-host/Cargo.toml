@@ -1,5 +1,5 @@
 [package]
-name = "binio-host"
+name = "wasi-binio-host"
 version = "0.1.0"
 authors = ["kevingzhang <kevin.zhang.canada@gmail.com>"]
 edition = "2018"
