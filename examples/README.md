@@ -11,7 +11,19 @@ The Hello-wasm module takes two input `Point` value and return the `Rantangle` v
 
 The `Point` and `React` data structure:
 
-https://github.com/TeaRUST/Binio/blob/dc742034b1cc63dde57547d13cd06760dcca7543/examples/hello-shared/src/lib.rs#L3-L14
+```
+pub struct Point {
+    pub x: i32,
+    pub y: i32,
+}
+
+pub struct React {
+    pub left: i32,
+    pub right: i32,
+    pub top: i32,
+    pub bottom: i32,
+}
+```
 
 ### Challenges
 
