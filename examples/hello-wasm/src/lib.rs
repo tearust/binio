@@ -9,8 +9,8 @@ fn prepare_buffer(buffer_size: i32)->i64 {
 #[no_mangle]
 fn do_compute(ptr:i32, buffer_size: i32)->i64{
     let point_tuple : (Point, Point) = binio_wasm::wasm_deserialize(ptr, buffer_size);
-    println!("point1 is {:?}", point_tuple.0);
-    println!("point2 is {:?}", point_tuple.1);
+    println!("Log from wasm -- point1 is {:?}", point_tuple.0);
+    println!("Log from wasm -- point2 is {:?}", point_tuple.1);
 
     let (left, right) = {
         if point_tuple.0.x > point_tuple.1.x{
