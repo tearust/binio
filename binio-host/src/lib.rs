@@ -33,13 +33,13 @@ where T: Serialize, R: Deserialize<'a> {
     
     let (arg_buffer_ptr, arg_buffer_len) = reserve_wasm_memory_buffer(arg, instance);
     fill_buffer(&arg, instance, arg_buffer_ptr, arg_buffer_len).unwrap();
-    let do_compute = instance
+    let wasm_func = instance
         .get_export(func_name)
         .and_then(|e| e.func())
         .unwrap()
         .get2::<i32, i32, i64>().unwrap();
 
-    let result_in_i64 = do_compute(arg_buffer_ptr, arg_buffer_len).expect("do_compute error"); //TODO, handle error
+    let result_in_i64 = wasm_func(arg_buffer_ptr, arg_buffer_len).expect("do_compute error"); //TODO, handle error
     let (result_buffer_ptr, result_buffer_len) = shared_mods::split_i64_to_i32(result_in_i64);
     let mem = instance.get_export("memory").unwrap().memory().expect("memory fail");
     let mem_array_ref = unsafe {mem.data_unchecked()};
