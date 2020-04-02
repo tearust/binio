@@ -1,4 +1,3 @@
-//use serde::{Serialize, Deserialize};
 use hello_shared::{Point, React};
 use binio_wasm;
 #[no_mangle]

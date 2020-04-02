@@ -11,4 +11,3 @@ crate-type = ['cdylib']
 [dependencies]
 hello-shared = {path = "../hello-shared"}
 binio-wasm = { path ="../../binio-wasm"}
-serde = { version = "1.0", features = ["derive"] }

@@ -1,7 +1,6 @@
 use wasmtime::*;
 use wasmtime_wasi::{Wasi, WasiCtxBuilder};
 use binio_host::{call_stub};
-//use serde::{Serialize, Deserialize};
 use hello_shared::{Point, React};
 
 fn main() {
@@ -10,6 +9,7 @@ fn main() {
 
     let point1 = Point{x:2, y:3};
     let point2 = Point{x:8, y:9};
+    
     let wcb = {
         WasiCtxBuilder::new()
         .env("HOME", "DIR")
