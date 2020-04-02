@@ -1,7 +1,7 @@
 use wasmtime::*;
 use wasmtime_wasi::{Wasi, WasiCtxBuilder};
 use binio_host::{call_stub};
-use hello_shared::{Point, React};
+use hello_shared::{Point, Rect};
 
 fn main() {
     let store = Store::default();
@@ -44,6 +44,6 @@ fn main() {
     }
 
     let instance = Instance::new(&module, &imports).unwrap();
-    let result: React= call_stub(&instance, &(point1, point2), "do_compute");
-    println!("return React {:?}", result);
+    let result: Rect= call_stub(&instance, &(point1, point2), "do_compute");
+    println!("return Rect {:?}", result);
 }

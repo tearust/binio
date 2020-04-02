@@ -6,7 +6,7 @@ pub struct Point {
     pub y: i32,
 }
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone, Copy)] 
-pub struct React {
+pub struct Rect {
     pub left: i32,
     pub right: i32,
     pub top: i32,
