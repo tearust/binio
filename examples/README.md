@@ -31,5 +31,81 @@ This is a simple task however it is pretty hard using wasm at this moment. That'
 
 ` let rect: Rect = do_compute(point1, point2) .....`
 
-So we have to make a utility tool to convert those complex structured to byte array and store in the wasm Memory then transfer the buffer pointer and length between host and wasm. This comes to Binio.
+So we have to make a utility tool to convert those complex structured to byte array and store in the wasm Memory then transfer the buffer pointer and length between host and wasm. Here comes the Binio.
+
+### Solution
+Use `Serde` and `Bincode` to serialize and deserialize the parameters and result to the memory shared between wasm and host. In order to make other developers easy to use, we made the `Binio` crate.
+
+The usage would be as simple as 
+
+
+```
+//Cargo.toml for the host
+
+[dependencies]
+binio-host = { path ="../../binio-host"}
+
+```
+
+
+```
+//Hello-host
+
+let instance = Instance::new(&module, &imports).unwrap();
+    let result: React= call_stub(&instance, &(point1, point2), "do_compute");
+    println!("return React {:?}", result);
+```
+
+```
+//Cargo.toml for the wasm
+
+[dependencies]
+binio-wasm = { path ="../../binio-wasm"
+```
+
+```
+//Hello-wasm
+
+use hello_shared::{Point, React};
+use binio_wasm;
+#[no_mangle]
+fn prepare_buffer(buffer_size: i32)->i64 {
+    binio_wasm::wasm_prepare_buffer(buffer_size)
+}
+
+#[no_mangle]
+fn do_compute(ptr:i32, buffer_size: i32)->i64{
+    let point_tuple : (Point, Point) = binio_wasm::wasm_deserialize(ptr, buffer_size);
+    println!("Log from wasm -- point1 is {:?}", point_tuple.0);
+    println!("Log from wasm -- point2 is {:?}", point_tuple.1);
+
+    let (left, right) = {
+        if point_tuple.0.x > point_tuple.1.x{
+            (point_tuple.1.x, point_tuple.0.x)
+        }
+        else{
+            (point_tuple.0.x, point_tuple.1.x)
+        }
+    };
+
+    let (top, bottom) = {
+        if point_tuple.0.y > point_tuple.1.y {
+            (point_tuple.1.y, point_tuple.0.y)
+        }
+        else{
+            (point_tuple.0.y, point_tuple.1.y)
+        }
+    };
+    let rect = React{left, right, top , bottom};
+    binio_wasm::wasm_serialize(&rect)
+}
+```
+
+# Build
+For host apps
+` cargo run`
+For wasm modules
+`cargo wasi build --release`
+
+Please make sure you have `wasmtime` and `wasi` installed first.
 
