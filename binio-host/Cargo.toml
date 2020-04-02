@@ -3,7 +3,8 @@ name = "wasi-binio-host"
 version = "0.1.0"
 authors = ["kevingzhang <kevin.zhang.canada@gmail.com>"]
 edition = "2018"
-
+description = "Allow complex data structure to be transffered as function arguments and results between host and wasm"
+license = "MIT"
 [dependencies]
 wasi_binio_shared_mods = "0.1.0"
 serde = { version = "1.0", features = ["derive"] }
