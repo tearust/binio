@@ -28,15 +28,27 @@
     
 use bincode;
 use serde::{Serialize, Deserialize};
-use wasi_binio_shared_mods::{split_i64_to_i32, join_i32_to_i64};//We put shared utilities function into shared_mods. basicly i32 i64 convertor
+use wasi_binio_shared_mods::{join_i32_to_i64, split_i64_to_i32};//We put shared utilities function into shared_mods. basicly i32 i64 convertor
 
 static mut BUFFERS : Vec<Vec<u8>> = Vec::new();
 
-fn wasm_prepare_buffer(size: i32) -> i64 {
+/// Allocate buffer from wasm linear memory in order to let host to deserialize arguments into
+/// # Example
+/// We have to have prepare_buffer function here under [no_mangle] because the binio-host will 
+/// look for this function from the wasm exports.
+/// the purpose of this function is to allocate memory for function args or result
+/// the return i64 actually contains two i32. One for buffer pointer another for buffer length
+/// ```
+///#[no_mangle]
+///fn prepare_buffer(buffer_size: i32)->i64 {
+///    wasi_binio_wasm::wasm_prepare_buffer(buffer_size)
+///}
+/// ```
+pub fn wasm_prepare_buffer(size: i32) -> i64 {
     let buffer : Vec<u8> = Vec::with_capacity(size as usize);
     let ptr = buffer.as_ptr() as i32;
     unsafe{BUFFERS.push(buffer)};
-    shared_mods::join_i32_to_i64(ptr, size )
+    join_i32_to_i64(ptr, size )
 }
 /// Main function in wasm will call this function to deserialize the arguments to the prepared 
 /// 
@@ -130,11 +142,11 @@ where T: Deserialize<'a> {
 ///```
 pub fn wasm_serialize<'a, T>(value: &T)->bincode::Result<i64> where T: Serialize {
     let buffer_size = bincode::serialized_size(value).unwrap() as i32; 
-    let (result_ptr, result_len) = shared_mods::split_i64_to_i32(wasm_prepare_buffer(buffer_size));
+    let (result_ptr, result_len) = split_i64_to_i32(wasm_prepare_buffer(buffer_size));
     let serialized_array = bincode::serialize(value).unwrap();
     let slice = unsafe { std::slice::from_raw_parts_mut(result_ptr as *mut _, result_len as usize)};
     for i in 0..result_len {
         slice[i as usize] = serialized_array[i as usize];
     }
-    Ok(shared_mods::join_i32_to_i64(result_ptr, result_len))
+    Ok(join_i32_to_i64(result_ptr, result_len))
 }

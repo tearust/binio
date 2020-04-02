@@ -29,7 +29,7 @@
 use wasmtime::Instance;
 use serde::{Serialize, Deserialize};
 
-use wasi_binio_shared_mods::{split_i64_to_i32, join_i32_to_i64};//We put shared utilities function into shared_mods. basicly i32 i64 convertor
+use wasi_binio_shared_mods::{split_i64_to_i32};//We put shared utilities function into shared_mods. basicly i32 i64 convertor
 
 //Host use this function to call wasm's reserve memory function to reserve a buffer inside
 //wasm's linear memory
@@ -44,7 +44,7 @@ fn reserve_wasm_memory_buffer<'a, T> (value: &T, instance: &Instance ) -> Result
         .get1::<i32, i64>().expect("Cannot get exported function 'prepare_buffer' from wasm instance");
     
     let result = prepare_buffer_func(buffer_size).expect("Error in prepare_buffer_func");
-    Ok(shared_mods::split_i64_to_i32(result))
+    Ok(split_i64_to_i32(result))
 }
 
 fn fill_buffer<T> (value: &T, instance: &Instance, ptr:i32, len:i32) -> Result<(), &'static str> where T: Serialize {
@@ -101,7 +101,7 @@ where T: Serialize, R: Deserialize<'a> {
         .get2::<i32, i32, i64>().expect(&format!("call_stub cannot get correct FuncType for function name: {} from wasm instance. Please make sure you exported such a function", func_name));
 
     let result_in_i64 = wasm_func(arg_buffer_ptr, arg_buffer_len).expect("do_compute error"); //TODO, handle error
-    let (result_buffer_ptr, result_buffer_len) = shared_mods::split_i64_to_i32(result_in_i64);
+    let (result_buffer_ptr, result_buffer_len) = split_i64_to_i32(result_in_i64);
     let mem = instance.get_export("memory").expect("Error exporting memory from instance").memory().expect("memory fail");
     let mem_array_ref = unsafe {mem.data_unchecked()};
 

@@ -5,7 +5,7 @@ authors = ["kevingzhang <kevin.zhang.canada@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-wasi_binio_shared_mods = {version = "1.0"}
+wasi_binio_shared_mods = "0.1.0"
 serde = { version = "1.0", features = ["derive"] }
 bincode = "1.0.0"
 wasmtime="0.15.0"
