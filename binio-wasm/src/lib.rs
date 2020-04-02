@@ -28,7 +28,7 @@
     
 use bincode;
 use serde::{Serialize, Deserialize};
-use shared_mods;
+use wasi_binio_shared_mods::{split_i64_to_i32, join_i32_to_i64};//We put shared utilities function into shared_mods. basicly i32 i64 convertor
 
 static mut BUFFERS : Vec<Vec<u8>> = Vec::new();
 

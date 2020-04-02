@@ -29,7 +29,7 @@
 use wasmtime::Instance;
 use serde::{Serialize, Deserialize};
 
-use shared_mods;//We put shared utilities function into shared_mods. basicly i32 i64 convertor
+use wasi_binio_shared_mods::{split_i64_to_i32, join_i32_to_i64};//We put shared utilities function into shared_mods. basicly i32 i64 convertor
 
 //Host use this function to call wasm's reserve memory function to reserve a buffer inside
 //wasm's linear memory
