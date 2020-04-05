@@ -1,6 +1,6 @@
 [package]
 name = "wasi-binio-wasm"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["kevingzhang <kevin.zhang.canada@gmail.com>"]
 edition = "2018"
 description = "Allow complex data structure to be transffered as function arguments and results between host and wasm"
