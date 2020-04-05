@@ -30,7 +30,7 @@ use bincode;
 use serde::{Serialize, Deserialize};
 use wasi_binio_shared_mods::{join_i32_to_i64, split_i64_to_i32};//We put shared utilities function into shared_mods. basicly i32 i64 convertor
 
-static mut BUFFERS : Vec<Vec<u8>> = Vec::new();
+static mut BUFFERS : Vec<Box<[u8]>> = Vec::new();
 
 /// Allocate buffer from wasm linear memory in order to let host to deserialize arguments into
 /// # Example
@@ -45,7 +45,8 @@ static mut BUFFERS : Vec<Vec<u8>> = Vec::new();
 ///}
 /// ```
 pub fn wasm_prepare_buffer(size: i32) -> i64 {
-    let buffer : Vec<u8> = Vec::with_capacity(size as usize);
+    //let buffer : Vec<u8> = Vec::with_capacity(size as usize);
+    let buffer = Vec::<u8>::with_capacity(size as usize).into_boxed_slice();
     let ptr = buffer.as_ptr() as i32;
     unsafe{BUFFERS.push(buffer)};
     join_i32_to_i64(ptr, size )
